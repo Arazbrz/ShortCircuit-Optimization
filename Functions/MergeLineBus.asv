@@ -1,0 +1,10 @@
+function MPC=MergeLineBus(MPC)
+addpath([cd '\graph_cal'])
+bus_con=ConCell(MPC)
+ for j=1:length(MPC.bus)
+   for i=1:3
+   MPC.busU{j,i}=MPC.bus(j,i
+   end
+   MPC.busU{i,4}=bus_con{i}
+ end
+end
