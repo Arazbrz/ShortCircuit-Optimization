@@ -3,7 +3,7 @@ clc
 addpath([cd '\Functions'])
 addpath([cd '\Functions\graph_cal'])
 %% Dataset Input
-%%%%%    bus name  inverter  Load   
+%%%%%    bus name    type    Load   
 MPC.bus=[1           2       10     2    1     0     50;
          2           0       10     2    0     0     50;
          3           0       10     2    0     0     50;
