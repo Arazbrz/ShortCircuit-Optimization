@@ -9,11 +9,11 @@ load('Test Cases\MPCSixbus.mat')
 %% add fault
 MPC=Faultedbus(MPC,3)
 %% Optimization
-M=MPC.M;
-N=MPC.N;
+M=MPC.M; %number of line
+N=MPC.N; %number of bus
 % yalmip('clear')
 s = sdpvar(N,1);
-sb = sdpvar(M,1);
+sline = sdpvar(M,1);
 V_R = sdpvar(N,1);
 V_I = sdpvar(N,1);
 I_R = sdpvar(N,1);
@@ -43,7 +43,7 @@ bus_con=ConCell(MPC);
  %    a=MPC.branch(i,1);
  %    b=MPC.branch(i,2);
  %    Constraints=[Constraints,MPC.branch(i,5)>=(v_R(a)-v_R(b))'*Gfind(a,b,MPC)+(v_I(a)-v_I(b))'*Gfind(a,b,MPC)+(v_R(a)-v_R(b))'*Bfind(a,b,MPC)-(v_I(a)-v_I(b))'*Bfind(a,b,MPC)]
- %    Constraints = [Constraints, 0 <= sb(i) <= 1];
+ %    Constraints = [Constraints, 0 <= sline(i) <= 1];
  %end
 %%
 for i=MPC.GFM
