@@ -24,7 +24,7 @@ I_I = sdpvar(N,1);
 
 
 %% Start YALMIP
-bus_con=ConCell(MPC);
+bus_con=ConCell(MPC); % bus connections
 % ALL bus
  for i=1:N
  Constraints = [ 0 <= s(i) <= 1];
