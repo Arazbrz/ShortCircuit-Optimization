@@ -1,4 +1,5 @@
 function bus_con=ConCell(MPC)
+% bus_con= an array of connected buses for each bus argument = test case
 % Extract line sets from bus sets 
 n=size(MPC.bus,1);
 bus_con_from=cell(n,1);
