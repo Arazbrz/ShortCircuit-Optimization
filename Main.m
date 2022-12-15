@@ -1,19 +1,22 @@
 clear classes
 clear all
 clc
-addpath([cd '\Functions'])
+%% Load Functions 
+addpath([cd '\Functions']) % add different functions
 addpath([cd '\Functions\graph_cal'])
 addpath([cd '\Test Cases'])
-%% Load Case
-load('Test Cases\MPCSixbus.mat')
-%% add fault
-MPC=Faultedbus(MPC,3)
+%% Load Case 
+load('Test Cases\MPCSixbus.mat') % Load case
+%% add fault 
+MPC=Faultedbus(MPC,3) % add fualt to certain bus (second argument)
 %% Optimization
-M=MPC.M; %number of line
-N=MPC.N; %number of bus
-% yalmip('clear')
+M=MPC.M; % extract number of lines from test case
+N=MPC.N; % extract number of buses from test case
+yalmip('clear')
+
+% Define variables
 s = sdpvar(N,1);
-sline = sdpvar(M,1);
+sb = sdpvar(M,1);
 V_R = sdpvar(N,1);
 V_I = sdpvar(N,1);
 I_R = sdpvar(N,1);
@@ -24,7 +27,7 @@ I_I = sdpvar(N,1);
 
 
 %% Start YALMIP
-bus_con=ConCell(MPC); % bus connections
+bus_con=ConCell(MPC);
 % ALL bus
  for i=1:N
  Constraints = [ 0 <= s(i) <= 1];
@@ -43,7 +46,7 @@ bus_con=ConCell(MPC); % bus connections
  %    a=MPC.branch(i,1);
  %    b=MPC.branch(i,2);
  %    Constraints=[Constraints,MPC.branch(i,5)>=(v_R(a)-v_R(b))'*Gfind(a,b,MPC)+(v_I(a)-v_I(b))'*Gfind(a,b,MPC)+(v_R(a)-v_R(b))'*Bfind(a,b,MPC)-(v_I(a)-v_I(b))'*Bfind(a,b,MPC)]
- %    Constraints = [Constraints, 0 <= sline(i) <= 1];
+ %    Constraints = [Constraints, 0 <= sb(i) <= 1];
  %end
 %%
 for i=MPC.GFM

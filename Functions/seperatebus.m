@@ -1,4 +1,4 @@
-function MPC=seperatebus(MPC) % seperating
+function MPC=seperatebus(MPC)
 MPC.GFM=find(MPC.bus(:,2)==2);
 MPC.GFL=find(MPC.bus(:,2)==1);
 MPC.NL=find(MPC.bus(:,2)==0);
