@@ -3,13 +3,13 @@ clc
 addpath([cd '\Functions'])
 addpath([cd '\Functions\graph_cal'])
 %% Dataset Input
-%%%%%    bus name  inverter  Load   
-MPC.bus=[1           2       10     2    1     0     50;
-         2           0       10     2    0     0     50;
-         3           0       10     2    0     0     50;
-         4           0       10     2    0     0     50;
-         5           1       10     2    20    1     50;
-         6           1       10     2    20    1     50];
+%%%%%    bus name  inverter  L_R   L_i                     base voltage R  base voltage I
+MPC.bus=[1           2       10     2    1     0     50     1              0;
+         2           0       10     2    0     0     50     1              0;
+         3           0       10     2    0     0     50     1              0;
+         4           0       10     2    0     0     50     1              0;
+         5           1       10     2    20    1     50     1;
+         6           1       10     2    20    1     50     1];
 MPC.branch=[1 2 0.0575259116172393	0.0293244885684409 100 ;
             2 3 0.307595167324284	0.156667639990117 100;
             2 4 0.228356655660625	0.116299673811859 100;

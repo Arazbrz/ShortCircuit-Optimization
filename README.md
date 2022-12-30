@@ -13,11 +13,10 @@ Folders:
 - Constraints is the variable for the whole constraints -
 
 # To Do List
-
--* Read YALMIP*-
--* Install Git*-
+-*Go through MPC.bus and organize (Bus parameters)*-
+-*KCL KVL for fault seperated (parametric)*-
+-*Table of all variables and paerameters*-
 -* check sections from vraiable to objective*-
--* check document*-
 - Capacity Constraint needs to be linearized-
 - Find the minimum fault current location -
 - Possible approach: define the minimum fault location as a new bus = n' buses -
