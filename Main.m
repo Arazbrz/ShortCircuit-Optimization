@@ -15,19 +15,22 @@ N=MPC.N; % extract number of buses from test case
 bus_con=ConCell(MPC); % My internal function to define bus connections
 % bus_con(i)=cell
 
-
 yalmip('clear')
 %% Define variables 
 % for syntax and more info YALMIP website
 % The variables should match the variables in the document
-s = sdpvar(N,1);
-sb = sdpvar(M,1);
+s = sdpvar(N,1);    
+sb = sdpvar(M,1);   
 V_R = sdpvar(N,1);
 V_I = sdpvar(N,1);
-I_R = sdpvar(N,1);
-I_I = sdpvar(N,1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+I_R = sdpvar(N,1);  %line currents Real
+I_I = sdpvar(N,1);  %line currents Imag
+I_Rload = sdpvar(length(MPC.NL),1);
+I_Iload = sdpvar(length(MPC.NL),1);
+I_RINV = sdpvar (length(MPC.INV),1)
+I_IINV = sdpvar (length(MPC.INV),1)
+I_RFault = sdpvar(length(MPC.F),1);
+I_IFault = sdpvar(length(MPC.F),1);
 
 %% Define constraints 
 % each constraint is valid for certain buses or branches
@@ -38,9 +41,8 @@ I_I = sdpvar(N,1);
 %% ALL bus including power flow, binaries for bus
  for i=1:N
  Constraints = [ 0 <= s(i) <= 1]; % CONSTRAINT binary
-
-
- Conect=cell2mat(bus_con(i)); % convert cell to variable  
+ %Conect=cell2mat(bus_con(i)); % convert cell to variable. done.  
+ Conect=bus_con{i,1};
  GR=0;GI=0;BR=0;BI=0; 
  for j=1:length(Conect) %%%% check
  GR=(V_R(i)-V_R(Conect(j)))'*Gfind(i,Conect(j),MPC)+GR; % sum of power flows to a certain bus G -real
@@ -49,7 +51,8 @@ I_I = sdpvar(N,1);
  BI=(V_I(i)-V_I(Conect(j)))'*Bfind(i,Conect(j),MPC)+BI; % sum of power flows to a certain bus B - imag
  end
 
- Constraints = [Constraints, I_R(i)==GR+BI,I_I(i)==BR-GI]; % CONSTRAINT load flow
+ I_R(i)==GR+BI;
+ I_I(i)==BR-GI;
  end
 
 %% All lines including capacity constraints (not now)
@@ -61,28 +64,44 @@ I_I = sdpvar(N,1);
  %end
 %% For GFM
 for i=MPC.GFM
-     Constraints = [Constraints, s(i)*V_R(i)==MPC.bus(i,5), s(i)*V_I(i)==MPC.bus(i,6)];
+     Constraints = [Constraints, I_R(i) + I_RINV(i) == 0 ,I_I(i) + I_IINV(i) == 0]
+     Constraints = [Constraints, s(i)*V_R(i)==MPC.bus(i,5), s(i)*V_I(i)==MPC.bus(i,6)]; %This has to be checked
      Constraints = [Constraints, MPC.Imax >= s(i)*sqrt((I_R(i))^2+(I_I(i))^2)];
 end
+
 %% For GFL
-%for i=MPC.GFL
-%     Constraints = [Constraints, s(i,1)*I_R(i,1)==MPC.bus(i,5), s(i,1)*I_I(i,1)==MPC.bus(i,6)];
-%     Constraints = [Constraints, MPC.Vmin <= s(i,1)*sqrt((V_R)^2+(V_I)^2), MPC.Vmax >= s(i,1)*sqrt((V_R(i,1))^2+(V_I(i,1))^2)]; 
-%end
-%% for i=NL 
-% for load
-%     Constraints = [Constraints, s(i,1)==1, MPC.Vmin <= sqrt((V_R)^2+(V_I)^2), MPC.Vmax >= sqrt((V_R(i,1))^2+(V_I(i,1))^2)];
-% end
-%% for i=F 
-% for fualt
-%     Constraints = [Constraints, s(i,1)==1, V_I(i,1)==0, V_R(i,1)==0, sqrt((I_I(i,1)+I_R(i,1))^2)>=MPC.bus(i,7)];
-% end
-%  %sl <= 1, 0 <= sl
-%% Objective
-% For Inverters=GFM+GFL (Objective Function)
-for i=MPC.INV
-F=F+(1-s(i))'*(MPC.C+I_R(i)+I_I(i));
+for i=MPC.GFL
+      Constraints = [Constraints, I_R(i)+I_RINV(i) == 0 ,I_I(i)+I_IINV(i) == 0]
+      Constraints = [Constraints, s(i)*I_R(i)==MPC.bus(i,5), s(i)*I_I(i)==MPC.bus(i,6)]; %%
+      Constraints = [Constraints, MPC.Vmin <= s(i)*sqrt((V_R(i))^2+(V_I(i))^2) <= MPC.Vmax]; 
+%
 end
+
+%% for i=NL 
+ for i=MPC.NL
+      Constraints = [Constraints, I_R(i) + I_RLoad(i) == 0, I_I(i) + I_ILoad(i) == 0 ]
+      Constraints = [Constraints, s(i)==1, MPC.Vmin <= sqrt((V_R(i))^2+(V_I(i))^2) <= MPC.Vmax ]; %%%Check%%%
+ end
+ 
+%% for i=F 
+Imaxinv=0
+if  MPC.F == 1 || MPC.F == 3 || MPC.F == 5
+  Imaxinv = Itreshinv; %corect the parameter Itreshinv and Imaxinv
+else Imaxinv=0;   
+end
+ for i=MPC.F
+      Constraints = [Constraints, I_RFault(i) + I_R(i) + Imaxinv == 0, I_IFault(i) + I_I(i) + Imaxinv == 0]
+      Constraints = [Constraints, s(i)==1, V_I(i)==0, V_R(i)==0, sqrt((I_I(i)+I_R(i))^2) >= MPC.bus(i,7)] %%%Check%%%
+      Constraints = [Constraints,  sqrt((I_RFault(i)+I_IFault(i))^2) >= Xtresh ] %Corect the parameter name Xtresh
+ end
+%  %sl <= 1, 0 <= sl
+
+%% Objective
+ For Inverters=GFM+GFL (Objective Function)
+for i=MPC.INV
+F=F+(1-s(i))'*(MPC.C+I_R(i)+I_I(i)); %defevtive
+end
+
 
 
 %% Solve

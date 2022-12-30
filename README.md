@@ -22,4 +22,6 @@ Folders:
 - Find the minimum fault current location -
 - Possible approach: define the minimum fault location as a new bus = n' buses -
 - If two types exist in one bus => split into two bus with a line with zero impedance-
-
+--------------------------------------------------------------------------------------
+#Questions
+-* You have not updated the document file, since the KCL for faulted bus is not implemented.
